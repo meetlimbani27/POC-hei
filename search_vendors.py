@@ -21,7 +21,7 @@ embeddings = OpenAIEmbeddings(
     openai_api_key=OPENAI_API_KEY
 )
 
-def search_similar_vendors(query, limit=15):
+def search_similar_vendors(query, limit=15, similarity_threshold=0.5):
     """
     Search for vendors with similar descriptions to the query.
     Returns the top matching vendors sorted by similarity.
@@ -29,9 +29,10 @@ def search_similar_vendors(query, limit=15):
     Args:
         query (str): The search query
         limit (int): Maximum number of results to return
+        similarity_threshold (float): Threshold for similarity score (0 to 1)
     """
     try:
-        # Generate embedding for the query
+        # Generate embedding for the query  
         query_embedding = embeddings.embed_query(query)
         
         # Call the match_vendors function
@@ -39,7 +40,7 @@ def search_similar_vendors(query, limit=15):
             'match_vendors',
             {
                 'query_embedding': query_embedding,
-                # 'match_threshold': similarity_threshold,
+                'match_threshold': similarity_threshold,
                 'match_count': limit
             }
         ).execute()
@@ -49,9 +50,10 @@ def search_similar_vendors(query, limit=15):
         for match in response.data:
             results.append({
                 'vendor_id': match['vendor_id'],
-                'description': match['company_description'],
+                'vendor_name': match['vendor_name'],
+                'company_description': match['company_description'],
                 'email': match['email'],
-                'similarity_score': match['similarity']
+                'similarity': match['similarity']
             })
             
         return results
@@ -72,20 +74,29 @@ def print_search_results(results):
         print(f"Match #{idx}")
         print(f"Vendor ID: {result['vendor_id']}")
         print(f"Email: {result['email']}")
-        print(f"Similarity Score: {result['similarity_score']:.4f}")
-        print(f"Description: {result['description']}")
+        print(f"Similarity Score: {result['similarity']:.4f}")
+        print(f"Description: {result['company_description']}")
         print("-" * 80)
 
 if __name__ == "__main__":
-    # Get search query from user
+    # Get user input
     query = input("Enter your search query: ")
     
-    # Perform similarity search
+    # Search for similar vendors
     results = search_similar_vendors(
         query,
         limit=15,
-        # similarity_threshold=0.5  # Adjust this threshold as needed (0 to 1)
+        similarity_threshold=0.5  # Set a reasonable default threshold
     )
     
     # Print results
-    print_search_results(results)
+    if results:
+        print("\nSearch Results:")
+        print("-" * 50)
+        for idx, result in enumerate(results, 1):
+            print(f"\n{idx}. Vendor: {result['vendor_name']}")
+            print(f"Description: {result['company_description']}")
+            print(f"Email: {result['email']}")
+            print(f"Similarity Score: {result['similarity']:.2f}")
+    else:
+        print("No matching vendors found.")

@@ -2,7 +2,7 @@ import uuid
 import csv
 
 # Read the CSV file
-with open('newdata.csv', 'r') as csvfile:
+with open('Merged_Data.csv', 'r') as csvfile:
     reader = csv.DictReader(csvfile)
     rows = list(reader)
 
@@ -12,7 +12,7 @@ for row in rows:
 
 # Write the updated data back to the file
 fieldnames = reader.fieldnames + ['vendor_id']
-with open('newdata.csv', 'w', newline='') as csvfile:
+with open('Merged_Data.csv', 'w', newline='') as csvfile:
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(rows)

@@ -35,33 +35,40 @@ def get_structured_vendor_data(df):
     """Convert vendor data to a structured format for the agent."""
     vendors = []
     for _, row in df.iterrows():
-        description = row["Company Description"]
+        description = row["Description"]
         vendor = {
             "vendor_id": row["vendor_id"],
             "company_description": description,
-            "description_embedding": get_embedding(description),
-            "email": row["Email ID"]
+            "embedding": get_embedding(description),
+            "email": row["Email id"],
+            "vendor_name": row["Vendor name"],
         }
         vendors.append(vendor)
     return vendors
 
-def store_vendors_in_supabase(vendors):
+def store_vendor_data(vendors):
     """Store vendor data in Supabase."""
-    for vendor in vendors:
+    total = len(vendors)
+    for idx, vendor in enumerate(vendors, 1):
         try:
-            response = supabase.table("vendors2").insert([vendor]).execute()
-            print(f"Successfully stored vendor {vendor['vendor_id']} in Supabase")
+            response = supabase.table("new_vendors").insert([vendor]).execute()
+            print(f"[{idx}/{total}] Successfully stored vendor {vendor['vendor_id']} in Supabase")
         except Exception as e:
-            print(f"Error storing vendor {vendor['vendor_id']}: {str(e)}")
+            print(f"[{idx}/{total}] Error storing vendor {vendor['vendor_id']}: {str(e)}")
+
 if __name__ == "__main__":
     # Read the CSV file
-    df = pd.read_csv('newdata.csv')
+    df = pd.read_csv('Merged_Data.csv')
+    
+    # Skip the first 5 rows that were already uploaded
+    df = df.iloc[5:]
+    print(f"Processing {len(df)} remaining rows...")
 
     # Get structured data with embeddings
     vendor_data = get_structured_vendor_data(df)
 
     # Store data in Supabase
-    store_vendors_in_supabase(vendor_data)
+    store_vendor_data(vendor_data)
 
     # Print the results
     print("\nStructured Vendor Data:")

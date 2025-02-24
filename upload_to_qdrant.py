@@ -23,7 +23,7 @@ qdrant_client = QdrantClient(
 )
 
 # Collection name for vendors
-COLLECTION_NAME = "vendors_cosine"
+COLLECTION_NAME = "new_vendors_cosine"
 
 def create_collection_if_not_exists():
     """Create a new collection if it doesn't exist"""
